@@ -1,10 +1,17 @@
 import discord
 from discord.ext import commands
+from discord import FFmpegPCMAudio
+import json
+from youtube_dl import YoutubeDL
+import asyncio
+from youtubesearchpython import VideosSearch
+from ast import alias
+
 
 intents = discord.Intents.default()
 intents.members = True
 
-client = commands.Bot(command_prefix='your prefix', intents=discord.Intents.all()) 
+client = commands.Bot(command_prefix=',', intents=discord.Intents.all()) 
 
 @client.event
 async def on_ready():
@@ -18,7 +25,7 @@ async def hello(ctx):
 
 @client.command()
 async def niggers(ctx):
-    await ctx.send("did you know black people cause 54% of rapes?")
+    await ctx.send("did you know black people cause 54 percent of rapes?")
 
 @client.event
 async def on_member_join(member):
@@ -31,6 +38,23 @@ async def on_member_join(member):
     channel = client.get_channel(1275670027437342741)
     await channel.send("Goodbyefaggot.")
 
+@client.command(pass_context = True)
+async def join(ctx):
+    if (ctx.author.voice):
+        channel = ctx.message.author.voice.channel
+        await channel.connect()
+
+    else:
+        await ctx.send("nigger")
+
+
+@client.command(pass_context = True)
+async def quit(ctx):
+    if(ctx.voice_client):
+        await ctx.guild.voice_client.disconnect()
+        await ctx.send("left successfully")
+    else:
+        await ctx.send("but im not in vc retard..")
 
 
 
