@@ -1,31 +1,15 @@
 import discord
 from discord.ext import commands
-from discord import FFmpegPCMAudio
-import json
-from youtube_dl import YoutubeDL
 import asyncio
-from youtubesearchpython import VideosSearch
-from ast import alias
+from dotenv import load_dotenv
+import yt_dlp
+import os
+import time
 
 
-intents = discord.Intents.default()
-intents.members = True
-
+bot = discord.ext.commands.Bot(command_prefix = ',', intents=discord.Intents.all())
 client = commands.Bot(command_prefix=',', intents=discord.Intents.all()) 
 
-@client.event
-async def on_ready():
-    print("The bot is ready to use.")
-    print("________________________")
-
-
-@client.command()
-async def hello(ctx):
-    await ctx.send("Hello, i kill niggers!")
-
-@client.command()
-async def niggers(ctx):
-    await ctx.send("did you know black people cause 54 percent of rapes?")
 
 @client.event
 async def on_member_join(member):
@@ -33,30 +17,20 @@ async def on_member_join(member):
     await channel.send("whats up nigger, welcome to the chudverse")
 
 
-@client.event
-async def on_member_join(member):
-    channel = client.get_channel(1275670027437342741)
-    await channel.send("Goodbyefaggot.")
+#musicbotcog
 
-@client.command(pass_context = True)
-async def join(ctx):
-    if (ctx.author.voice):
-        channel = ctx.message.author.voice.channel
-        await channel.connect()
-
-    else:
-        await ctx.send("nigger")
-
-
-@client.command(pass_context = True)
-async def quit(ctx):
-    if(ctx.voice_client):
-        await ctx.guild.voice_client.disconnect()
-        await ctx.send("left successfully")
-    else:
-        await ctx.send("but im not in vc retard..")
+COG_FOLER_DIC = './cogs' 
 
 
 
-
-client.run('MTI3NjA0Mzg2MjExMjA3NTc4Nw.GpJtrl.lxBWI5BLfk4wiNkNJlFa_v9IqUkKSKLLxpjBkY')
+@bot.event
+async def on_ready():
+    for file in os.listdir(COG_FOLER_DIC):
+        if file.endswith('.py'):
+            print(f'File found: {file}')
+            if not COG_FOLER_DIC.startswith('./'):
+                raise Exception('Cog folder must start with a dot and a slash!')
+            shortend_dic = COG_FOLER_DIC[2:]
+            await bot.load_extension(f'{shortend_dic}.{file[:-3]}')
+            print(f'Loaded cog: {file[:-3]}')
+bot.run('MTI3NjA0Mzg2MjExMjA3NTc4Nw.GpJtrl.lxBWI5BLfk4wiNkNJlFa_v9IqUkKSKLLxpjBkY')
