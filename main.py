@@ -11,6 +11,11 @@ from cashews import Cache
 from discord import Member
 from discord.ext.commands import CommandNotFound
 from discord.ext.commands import has_permissions, MissingPermissions
+import google.generativeai as genai
+
+genai.configure(api_key="AIzaSyDN7-LYxbUiMpca3PBUkgFhvk01GBw5o-0")
+
+model = genai.GenerativeModel('gemini-pro')
 # Loop policy for Windows
 if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -30,6 +35,12 @@ async def on_ready():
             print(f'Successfully loaded {extension}')
         except Exception as e:
             print(f'Failed to load extension {extension}. Error: {e}')
+
+@client.command(name = "askai")
+async def askai(ctx: commands.Context, *, prompt: str):
+    response = model.generate_context(prompt)
+
+    await ctx.reply(response.txt)
 
 @client.command()
 @has_permissions(kick_members=True)
