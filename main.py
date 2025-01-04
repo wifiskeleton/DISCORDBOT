@@ -11,14 +11,6 @@ from cashews import Cache
 from discord import Member
 from discord.ext.commands import CommandNotFound
 from discord.ext.commands import has_permissions, MissingPermissions
-import google.generativeai as genai
-
-genai.configure(api_key="AIzaSyDN7-LYxbUiMpca3PBUkgFhvk01GBw5o-0")
-
-model = genai.GenerativeModel('gemini-pro')
-# Loop policy for Windows
-if sys.platform == 'win32':
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 # Initialize bot with commands
 intents = discord.Intents.all()
@@ -28,7 +20,7 @@ client = commands.Bot(command_prefix=',', intents=intents)
 async def on_ready():
     print(f'Logged in as {client.user.name}')
     
-    extensions = ['cogs.MUSIC', 'cogs.Blacktea']
+    extensions = ['cogs.MUSIC', 'cogs.Blacktea', 'cogs.admin']
     for extension in extensions:
         try:
             await client.load_extension(extension)  # Use await here
@@ -36,45 +28,28 @@ async def on_ready():
         except Exception as e:
             print(f'Failed to load extension {extension}. Error: {e}')
 
-@client.command(name = "askai")
-async def askai(ctx: commands.Context, *, prompt: str):
-    response = model.generate_context(prompt)
-
-    await ctx.reply(response.txt)
-
-@client.command()
-@has_permissions(kick_members=True)
-async def kick(ctx, member: discord.Member, *, reason=None):
-    await member.kick(reason = reason)
-    await ctx.send(f'User {member} has been booted from da chudverse nga.')
-
-@kick.error
-async def kick_error(ctx,error):
-    if isinstance(error, commands.MissingPermissions):
-        await ctx.send ("nga u not even admin.")
-
-@client.command()
-@has_permissions(kick_members=True)
-async def ban(ctx, member: discord.Member, *, reason=None):
-    await member.ban(reason = reason)
-    await ctx.send(f'User {member} has been booted from da chudverse nga.')
-
-@ban.error
-async def ban_error(ctx,error):
-    if isinstance(error, commands.MissingPermissions):
-        await ctx.send ("nga u not even admin.")
-
-
 @client.event
-async def on_member_join(member):
-    channel = client.get_channel(1275670027437342741)  # channel id
-    if channel:
-        await channel.send(f"Welcome to the chudverse, {member.mention}.")
+async def on_guild_join(guild):
+    """Create the 'Muted' role when the bot first joins a server."""
+    muted_role = discord.utils.get(guild.roles, name="Muted")
+    
+    # Create the muted role if it doesn't exist
+    if not muted_role:
+        muted_role = await guild.create_role(
+            name="Muted",
+            permissions=discord.Permissions(send_messages=False, speak=False)
+        )
+        # Set permissions for all channels to mute users with this role
+        for channel in guild.text_channels:
+            await channel.set_permissions(muted_role, send_messages=False, speak=False)
+        
+        print(f"Muted role created in {guild.name}")
 
 @client.event
 async def on_command_error(ctx, error):
     if isinstance(error, CommandNotFound):
         return
     raise error
+
 # Run the client
-client.run('MTI3NjA0Mzg2MjExMjA3NTc4Nw.GpJtrl.lxBWI5BLfk4wiNkNJlFa_v9IqUkKSKLLxpjBkY')
+client.run('MTMyMjc1MDc5ODU1OTcxMTMwNA.Gg0Ly-._iuGySahDsvXxINLMxRlu8QNtfaKOSTTv8EJko')
