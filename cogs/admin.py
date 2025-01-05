@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-import asyncio
 
 class Admin(commands.Cog):
     def __init__(self, bot):
@@ -22,11 +21,10 @@ class Admin(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(manage_roles=True)
-    async def mute(self, ctx, member: discord.Member, duration: str = None):
-        """Mute a user indefinitely or for a specified duration, and remove their 'cool' role."""
+    async def mute(self, ctx, member: discord.Member):
+        """Mute a user by adding the 'Muted' role."""
         guild = ctx.guild
         muted_role = discord.utils.get(guild.roles, name="Muted")
-        cool_role = discord.utils.get(guild.roles, name="cool")  # Lowercase 'cool' role
 
         if not muted_role:
             await ctx.send("Muted role not found, please make sure the bot created it on first join.")
@@ -37,53 +35,16 @@ class Admin(commands.Cog):
             await ctx.send(f"{member.mention} is already muted.")
             return
 
-        # Add the muted role to the user
+        # Add the muted role to the user without modifying other roles
         await member.add_roles(muted_role, reason=f"Muted by {ctx.author}")
-
-        # Remove the 'cool' role if they have it
-        if cool_role in member.roles:
-            await member.remove_roles(cool_role, reason="Removed during mute")
-
-        # Deny the muted user access to all channels
-        for channel in guild.text_channels:
-            await channel.set_permissions(muted_role, read_messages=False)
-
-        # Send the mute message only once
-        mute_message = f"{member.mention} has been muted and the 'cool' role has been removed."
         
-        # If there is a duration, handle it after the message
-        if duration:
-            try:
-                time_units = {"s": 1, "m": 60, "h": 3600, "d": 86400}
-                unit = duration[-1].lower()
-                if unit not in time_units:
-                    raise ValueError("Invalid time unit. Use s, m, h, or d.")
-                
-                time_amount = int(duration[:-1])
-                total_seconds = time_amount * time_units[unit]
-                await asyncio.sleep(total_seconds)
-
-                # Remove the muted role and restore channel permissions
-                await member.remove_roles(muted_role, reason="Mute duration expired")
-                for channel in guild.text_channels:
-                    await channel.set_permissions(muted_role, read_messages=None)  # Restore default permissions
-
-                # Optionally, add the 'cool' role back if it was removed during mute
-                if cool_role and cool_role not in member.roles:
-                    await member.add_roles(cool_role, reason="Restored after unmute")
-
-                mute_message = f"{member.mention} has been unmuted nigga."
-
-            except ValueError:
-                await ctx.send("Invalid duration format. Use a number followed by s, m, h, or d (e.g., 10m).")
-                return
-
-        await ctx.send(mute_message)  # Send the mute/unmute message once
+        # Send a confirmation message
+        await ctx.send(f"{member.mention} has been muted.")
 
     @commands.command()
     @commands.has_permissions(manage_roles=True)
     async def unmute(self, ctx, member: discord.Member):
-        """Unmute a user."""
+        """Unmute a user by removing the 'Muted' role."""
         guild = ctx.guild
         muted_role = discord.utils.get(guild.roles, name="Muted")
 
@@ -91,11 +52,16 @@ class Admin(commands.Cog):
             await ctx.send("Muted role not found, please make sure the bot created it on first join.")
             return
 
-        if muted_role in member.roles:
-            await member.remove_roles(muted_role, reason=f"Unmuted by {ctx.author}")
-            await ctx.send(f"{member.mention} has been unmuted!")
-        else:
+        # Check if the user is muted
+        if muted_role not in member.roles:
             await ctx.send(f"{member.mention} is not muted.")
+            return
+
+        # Remove the muted role from the user without modifying other roles
+        await member.remove_roles(muted_role, reason=f"Unmuted by {ctx.author}")
+
+        # Send a confirmation message
+        await ctx.send(f"{member.mention} has been unmuted.")
 
 async def setup(bot):
     await bot.add_cog(Admin(bot))
