@@ -1,6 +1,7 @@
 import sys
 import asyncio
 import discord
+from neuralintents import GenericAssistant
 from discord.ext import commands
 import os
 import redis
